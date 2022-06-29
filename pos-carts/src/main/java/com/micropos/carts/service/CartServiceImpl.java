@@ -7,6 +7,8 @@ import com.micropos.common.model.Item;
 import com.micropos.common.model.Order;
 import com.micropos.common.model.Product;
 import com.micropos.carts.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,12 +22,14 @@ import java.util.UUID;
 class CartServiceImpl implements CartService {
 
     private final ProductRepository db;
-    private final RestTemplate restTemplate;
+
+    @Autowired
+    @LoadBalanced
+    private RestTemplate restTemplate;
     private Cart cart;
 
     public CartServiceImpl(ProductRepository db) {
         this.db = db;
-        this.restTemplate = new RestTemplate();
     }
 
     @Override
@@ -71,7 +75,7 @@ class CartServiceImpl implements CartService {
 
     @Override
     public Order checkoutCart() {
-        String counterUrl = "http://localhost:8083/api/counter/checkout";
+        String counterUrl = "http://POS-COUNTER/api/counter/checkout";
         ObjectMapper mapper = new ObjectMapper();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

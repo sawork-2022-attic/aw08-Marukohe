@@ -2,6 +2,8 @@ package com.micropos.order.service;
 
 import com.micropos.common.model.Order;
 import com.micropos.order.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,13 +14,14 @@ import java.util.List;
 @Service
 public class OrderServiceImpl implements OrderService{
 
-    private final RestTemplate restTemplate;
+    @Autowired
+    @LoadBalanced
+    private RestTemplate restTemplate;
     private final OrderRepository orderRepository;
 
     private final StreamBridge streamBridge;
 
     public OrderServiceImpl(OrderRepository orderRepository, StreamBridge streamBridge) {
-        this.restTemplate = new RestTemplate();
         this.orderRepository = orderRepository;
         this.streamBridge = streamBridge;
     }
@@ -30,7 +33,7 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public Order createOrder() {
-        String url = "http://localhost:8081/api/carts/checkout";
+        String url = "http://POS-CARTS/api/carts/checkout";
         Order order = restTemplate.postForEntity(url, null, Order.class).getBody();
         if (order != null) {
             orderRepository.save(order);
